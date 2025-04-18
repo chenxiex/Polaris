@@ -1,0 +1,9 @@
+[submodule "LLMzip"]
+	path = LLMzip
+	url = git@github.com:chenxiex/LLMzip.git
+[submodule "LLMsteg"]
+	path = LLMsteg
+	url = git@github.com:chenxiex/LLMsteg.git
+[submodule "github_issue_forum"]
+	path = github_issue_forum
+	url = git@github.com:chenxiex/github_issue_forum.git

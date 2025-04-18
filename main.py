@@ -57,7 +57,6 @@ def parse_input():
     elif work_mode == "receive":
         input_obj["id"] = process_id(args.id)
         output_file = args.file
-        assert(os.path.exists(output_file)), f"接收文件不存在：{output_file}"
         input_obj["output_file"] = output_file
         
     elif work_mode == "continue":
@@ -155,8 +154,25 @@ def hist_write(chunk_nums, chunk_i, prev_id, curr_id):
     with open(hist_file, 'w', encoding='utf-8') as f:
         json.dump(hist, f, ensure_ascii=False)
 
+# 分组接收历史读取
+hist_recv_file = os.path.join(data_dir, "hist_recv.json")
+def hist_recv_read():
+    with open(hist_recv_file, 'r', encoding='utf-8') as f:
+        # 读取文件内容
+        if os.path.getsize(hist_recv_file) == 0:
+            raise Exception("历史记录文件为空")
+        # 将 JSON 字符串转换为 Python 对象
+        hist = json.load(f)
+    return hist
+
 # 隐写模块
-from LLMsteg import encode_file, decode_file
+def encode_file(prompt, secret, output, k=4):
+    env = os.environ.copy()
+    subprocess.run(["python", "main.py", "--encode_decode", "0", "--k", str(k), "--prompt", prompt, "--secret", secret, "--output", output], check=True, text=True, cwd=os.path.join(project_dir, "LLMsteg"), env=env)
+
+def decode_file(prompt, cover, output, k=4):
+    env = os.environ.copy()
+    subprocess.run(["python", "main.py", "--encode_decode", "1", "--k", str(k), "--prompt", prompt, "--cover", cover, "--output", output], check=True, text=True, cwd=os.path.join(project_dir, "LLMsteg"), env=env)
 
 # 论坛API操作模块
 owner = os.getenv("OWNER")
@@ -188,6 +204,32 @@ def create_frame(frame_file):
             f.write(chunk_data)
     return id
 
+# 帧提取模块
+def extract_frame(frame_file):
+    with open(frame_file, 'rb') as f:
+        f.seek(1)
+        chunk_i = int.from_bytes(f.read(1), byteorder='big')
+        prev_id = [int.from_bytes(f.read(1), byteorder='big'), int.from_bytes(f.read(1), byteorder='big')]
+        next_id = [int.from_bytes(f.read(1), byteorder='big'), int.from_bytes(f.read(1), byteorder='big')]
+        chunk_size = int.from_bytes(f.read(1), byteorder='big')
+        chunk_data = f.read(chunk_size)    
+
+    try:
+        hist = hist_recv_read()
+    except:
+        hist = {}
+    assert chunk_i not in hist, f"第{chunk_i}个隐写帧已存在，请检查帖子。"
+    hist[str(chunk_i)] = {}
+    hist[str(chunk_i)]["prev_id"] = prev_id
+    hist[str(chunk_i)]["next_id"] = next_id
+    with open(hist_recv_file, 'w', encoding='utf-8') as f:
+        json.dump(hist, f, ensure_ascii=False)
+
+    chunk_file = os.path.join(data_dir, "chunks", f"chunk_{chunk_i}.bin")
+    with open(chunk_file, 'wb') as chunk_fd:
+        chunk_fd.write(chunk_data)
+    return chunk_i
+
 # 隐写与发送
 def process_frame():
     hist = hist_read()
@@ -217,6 +259,56 @@ def process_frame():
     with open(hist_file, 'w', encoding='utf-8') as f:
         json.dump(hist, f, ensure_ascii=False)
 
+# 接收与提取
+def receive_frame(id):
+    print("正在接收帖子数据...")
+    comments = get_comment_data(owner, repo, id[0], id[1])
+    post = get_post_data(owner, repo, id[0], id[1])
+    prompt_file = os.path.join(data_dir, "prompt.txt")
+    with open(prompt_file, 'w', encoding='utf-8') as f:
+        f.write(post)
+    print("获取完成。")
+
+    print("正在提取隐写数据...")
+    flag = False
+    frame_file = os.path.join(data_dir, "frame.bin")
+    for i in comments:
+        comment_file = os.path.join(data_dir, "comment.txt")
+        with open(comment_file, 'w', encoding='utf-8') as f:
+            f.write(i)
+        decode_file(prompt_file, comment_file, frame_file)
+
+        with open(frame_file, 'rb') as f:
+            verify_stamp = int.from_bytes(f.read(1), byteorder='big')
+        if verify_stamp == stamp:
+            flag = True
+            break
+    if not flag:
+        print("未找到隐写数据，请检查帖子。")
+        exit(1)
+    print("提取完成。")
+    
+    print("正在处理隐写帧...")
+    extract_frame(frame_file)
+    print("处理完成。")
+
+def receive_frames():
+    flag = True
+    while flag:
+        flag = False
+        hist = hist_recv_read()
+        for i_str,id in hist.items():
+            i= int(i_str)
+            if i-1 >= 0 and str(i-1) not in hist:
+                print(f"第{i-1}个隐写帧缺失，正在接收...")
+                receive_frame(id["prev_id"])
+                flag = True
+                break
+            if id["next_id"] != [0,0] and str(i+1) not in hist:
+                print(f"第{i+1}个隐写帧缺失，正在接收...")
+                receive_frame(id["next_id"])
+                flag = True
+                break
 
 # 主函数
 def main():
@@ -246,6 +338,25 @@ def main():
     
     elif work_mode == "receive":
         output_file = input_obj["output_file"]
+        id = input_obj["id"]
+        receive_frame(id)
+        
+        receive_frames()
+
+        print("正在合并文件...")
+        hist = hist_recv_read()
+        compressed_file = os.path.join(data_dir, "compressed_file.bin")
+        with open(compressed_file, 'wb') as out_f:
+            for i in range(len(hist)):
+                chunk_file = os.path.join(data_dir, "chunks", f"chunk_{i}.bin")
+                with open(chunk_file, 'rb') as in_f:
+                    out_f.write(in_f.read())
+        print("合并完成。")
+
+        print("正在解压缩文件...")
+        decompress_file(compressed_file, output_file)
+        print("解压缩完成。")
+        os.remove(hist_recv_file)
     
     elif work_mode == "continue":
         hist = hist_read()

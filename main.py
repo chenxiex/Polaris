@@ -29,9 +29,9 @@ def parse_input():
     
     # 创建参数解析器
     parser = argparse.ArgumentParser(description="Polaris 数据传输工具")
-    parser.add_argument("--mode", choices=["send", "receive", "continue"], required=True, help="工作模式: send(发送), receive(接收), continue(继续)")
-    parser.add_argument("--id", required=True, help="发送目标ID，格式为 数字/数字")
-    parser.add_argument("--file", required=True, help="隐写文件路径（绝对路径）")
+    parser.add_argument("--mode", choices=["send", "receive", "continue"], required=True, help="工作模式: send(发送), receive(接收), continue(继续发送)")
+    parser.add_argument("--id", required=True, help="发送目标ID，格式为 帖子编号/楼层编号")
+    parser.add_argument("--file", required=True, help="输入或输出文件路径（绝对路径）")
     
     # 解析命令行参数
     args = parser.parse_args()

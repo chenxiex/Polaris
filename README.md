@@ -7,7 +7,7 @@
 程序仅在 python 3.11 上测试通过。
 
 ```bash
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 然后，按照`.env.example`内的示例，创建`.env`文件，并根据自身情况填入相应的环境变量的值。**注意**，这一步必须完成！

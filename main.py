@@ -1,0 +1,250 @@
+from dotenv import load_dotenv
+load_dotenv()
+import os
+import subprocess
+import shutil
+import json
+import argparse  # 新增导入 argparse 模块
+
+data_dir = None
+project_dir = None
+work_mode = None
+
+# 环境变量设置
+def set_env():
+    global data_dir, project_dir
+    # DATA_DIR为相对当前文件的data文件夹，不存在则创建
+    data_dir= os.path.join(os.path.dirname(__file__), "data")
+    os.makedirs(data_dir, exist_ok=True)
+    os.environ["DATA_DIR"] = data_dir
+    # PROJECT_DIR为当前文件所在目录
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    os.environ["PROJECT_DIR"] = project_dir
+
+set_env()
+
+# 输入模块
+def parse_input():
+    global work_mode
+    
+    # 创建参数解析器
+    parser = argparse.ArgumentParser(description="Polaris 数据传输工具")
+    parser.add_argument("--mode", choices=["send", "receive", "continue"], required=True, help="工作模式: send(发送), receive(接收), continue(继续)")
+    parser.add_argument("--id", required=True, help="发送目标ID，格式为 数字/数字")
+    parser.add_argument("--file", required=True, help="隐写文件路径（绝对路径）")
+    
+    # 解析命令行参数
+    args = parser.parse_args()
+    work_mode = args.mode
+    
+    # 将 id 处理封装为函数
+    def process_id(id):
+        # 使用列表推导式，将id以"/"分割
+        result = [i for i in id.split("/") if i]
+        assert len(result) == 2, "ID格式错误，请使用'/''分割"
+        assert all(i.isdigit() for i in result), "ID格式错误，请使用数字"
+        return result
+    
+    input_obj = {}
+    
+    # 处理不同模式的参数
+    if work_mode == "send":
+        input_obj["id"] = process_id(args.id)
+        input_file = args.file
+        assert(os.path.exists(input_file)), f"隐写文件不存在：{input_file}"
+        input_obj["input_file"] = input_file
+        
+    elif work_mode == "receive":
+        input_obj["id"] = process_id(args.id)
+        output_file = args.file
+        assert(os.path.exists(output_file)), f"接收文件不存在：{output_file}"
+        input_obj["output_file"] = output_file
+        
+    elif work_mode == "continue":
+        # 检查是否存在历史记录文件
+        hist_file = os.path.join(data_dir, "hist.json")
+        if not os.path.exists(hist_file):
+            print("历史记录文件不存在，请先发送数据。")
+            exit(1)
+    
+    return input_obj
+
+# 压缩模块
+def llmzip_set_env():
+    llama_folder = os.getenv("LLAMA_FOLDER")
+    llmzip_folder = os.path.join(project_dir, "LLMzip")
+    compression_folder = os.path.join(data_dir, "compression")
+    os.makedirs(compression_folder, exist_ok=True)
+    compressed_file_name = os.path.join(compression_folder, "LLMzip_511_AC.txt")
+    return llama_folder, llmzip_folder, compression_folder, compressed_file_name
+
+def compress_file(input_file, output_file):
+    llama_folder, llmzip_folder, compression_folder, compressed_file_name = llmzip_set_env()
+    try:
+        env=os.environ.copy()
+        result=subprocess.run(["torchrun", "--nproc_per_node", "1" ,"LLMzip_run.py", "--ckpt_dir", llama_folder, "--tokenizer_path", os.path.join(llama_folder,"tokenizer.model"), "--win_len", "511", "--text_file", input_file, "--compression_folder", compression_folder, "--encode_decode", "0"], check=True, text=True, cwd=llmzip_folder, env=env)
+    except subprocess.CalledProcessError as e:
+        print(f"压缩失败：{e}")
+        exit(1)
+    with open(compression_folder+"/LLMzip_511_metrics.json") as metrics_file:
+        total_length = json.load(metrics_file)['$N_T$'][0]
+    total_length= int(total_length)
+
+    # 先将 total_length 写入 output_file，占用 4 个字节，用前导0填充
+    with open(output_file, 'wb') as out_f:
+        out_f.write(total_length.to_bytes(4, byteorder='big'))
+        # 再写入压缩文件内容
+        with open(compressed_file_name, 'rb') as in_f:
+            out_f.write(in_f.read())
+    # 删除compression_folder，然后重新创建空文件夹
+    shutil.rmtree(compression_folder)
+    os.makedirs(compression_folder, exist_ok=True)
+
+# 解压缩模块
+def decompress_file(input_file, output_file):
+    llama_folder, llmzip_folder, compression_folder, compressed_file_name = llmzip_set_env()
+    # 从输入文件中读取前4字节作为total_length，将剩余内容写入compressed_file_name
+    with open(input_file, 'rb') as in_f:
+        total_length = int.from_bytes(in_f.read(4), byteorder='big')
+        with open(compressed_file_name, 'wb') as out_f:
+            out_f.write(in_f.read())
+    
+    # 使用从文件中读取的total_length
+    try:
+        env = os.environ.copy()
+        result=subprocess.run(["torchrun", "--nproc_per_node", "1", "LLMzip_run.py", "--ckpt_dir", llama_folder, "--tokenizer_path", os.path.join(llama_folder, "tokenizer.model"), "--win_len", "511", "--compression_folder", compression_folder, "--encode_decode", "1", "--save_file", output_file, "--verify_save_decoded", "0", "--total_length", str(total_length)], check=True, text=True, cwd=os.path.join(project_dir, "LLMzip"), env=env)
+    except subprocess.CalledProcessError as e:
+        print(f"解压缩失败：{e}")
+        exit(1)
+    # 删除compression_folder，然后重新创建空文件夹
+    shutil.rmtree(compression_folder)
+    os.makedirs(compression_folder, exist_ok=True)
+
+# 分组模块
+def split_file(input_file, output_dir, chunk_size=255):
+    os.makedirs(output_dir, exist_ok=True)
+    with open(input_file, 'rb') as in_f:
+        chunk = in_f.read(chunk_size)
+        i = 0
+        while chunk:
+            with open(os.path.join(output_dir, f"chunk_{i}.bin"), 'wb') as out_f:
+                out_f.write(chunk)
+            i += 1
+            chunk = in_f.read(chunk_size)
+    return i
+
+# 分组发送历史读取
+hist_file = os.path.join(data_dir, "hist.json")
+def hist_read():
+    with open(hist_file, 'r', encoding='utf-8') as f:
+        # 读取文件内容
+        if os.path.getsize(hist_file) == 0:
+            raise Exception("历史记录文件为空")
+        # 将 JSON 字符串转换为 Python 对象
+        hist = json.load(f)
+    return hist
+
+# 分组发送历史写入
+def hist_write(chunk_nums, chunk_i, prev_id, curr_id):
+    hist = {
+        "chunk_nums": chunk_nums,
+        "chunk_i": chunk_i,
+        "prev_id": prev_id,
+        "curr_id": curr_id
+    }
+    with open(hist_file, 'w', encoding='utf-8') as f:
+        json.dump(hist, f, ensure_ascii=False)
+
+# 隐写模块
+from LLMsteg import encode_file, decode_file
+
+# 论坛API操作模块
+owner = os.getenv("OWNER")
+repo = os.getenv("REPO")
+from github_issue_forum import *
+
+# 帧生成模块
+stamp = 80
+def create_frame(frame_file):
+    hist = hist_read()
+    with open(frame_file, 'wb') as f:
+        f.write(stamp.to_bytes(1, byteorder='big'))
+        f.write(hist["prev_id"][0].to_bytes(1, byteorder='big'))
+        f.write(hist["prev_id"][1].to_bytes(1, byteorder='big'))
+        id = get_random_id(owner,repo)
+        f.write(id[0].to_bytes(1, byteorder='big'))
+        f.write(id[1].to_bytes(1, byteorder='big'))
+        chunk_file = os.path.join(data_dir, "chunks", f"chunk_{hist['chunk_i']}.bin")
+        chunk_size = os.path.getsize(chunk_file)
+        f.write(chunk_size.to_bytes(1, byteorder='big'))
+        with open(chunk_file, 'rb') as chunk_fd:
+            chunk_data = chunk_fd.read()
+            f.write(chunk_data)
+    return id
+
+# 隐写与发送
+def process_frame():
+    hist = hist_read()
+    print("正在生成第{}个隐写帧...".format(hist["chunk_i"]))
+    frame_file = os.path.join(data_dir, "frame.bin")
+    next_id = create_frame(frame_file)
+    print(f"隐写帧生成完成。")
+
+    print("正在获取帖子数据...")
+    prompt = get_post_data(owner, repo, hist["curr_id"][0], hist["curr_id"][1])
+    prompt_file = os.path.join(data_dir, "prompt.txt")
+    with open(prompt_file, 'w', encoding='utf-8') as f:
+        f.write(prompt)
+    print("获取完成。")
+
+    print(f"正在隐写...")
+    output_file = os.path.join(data_dir, "output.txt")
+    encode_file(prompt_file, frame_file, output_file)
+    print("隐写完成。")
+
+    print("正在发送...")
+    send_post_data(owner, repo, hist["curr_id"][0], output_file)
+    print("发送完成。")
+    hist["chunk_i"] += 1
+    hist["prev_id"] = hist["curr_id"]
+    hist["curr_id"] = next_id
+    with open(hist_file, 'w', encoding='utf-8') as f:
+        json.dump(hist, f, ensure_ascii=False)
+
+
+# 主函数
+def main():
+    global work_mode
+    input_obj=parse_input()
+
+    if work_mode == "send":
+        input_file = input_obj["input_file"]
+        print("正在压缩文件...")
+        compressed_file = os.path.join(data_dir, "compressed_file.bin")
+        compress_file(input_file, compressed_file)
+        print(f"压缩完成，压缩前文件大小：{os.path.getsize(input_file)} bytes，压缩后文件大小：{os.path.getsize(compressed_file)} bytes")
+
+        print("正在分割文件...")
+        chunk_nums=split_file(compressed_file, os.path.join(data_dir, "chunks"))
+        print(f"分割完成，共分割为 {chunk_nums} 个文件")
+
+        hist_write(chunk_nums, 0, [0, 0], input_obj["id"])
+        for i in range(chunk_nums):
+            process_frame()
+            pause = input("按回车键继续，输入exit退出：")
+            if pause == "exit":
+                break
+    
+    elif work_mode == "receive":
+        output_file = input_obj["output_file"]
+    
+    elif work_mode == "continue":
+        hist = hist_read()
+        for i in range(hist["chunk_i"], hist["chunk_nums"]):
+            process_frame()
+            pause = input("按回车键继续，输入exit退出：")
+            if pause == "exit":
+                break
+
+if __name__ == "__main__":
+    main()

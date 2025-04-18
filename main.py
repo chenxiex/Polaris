@@ -169,9 +169,15 @@ def create_frame(frame_file):
     hist = hist_read()
     with open(frame_file, 'wb') as f:
         f.write(stamp.to_bytes(1, byteorder='big'))
+        f.write(hist["chunk_i"].to_bytes(1, byteorder='big'))
         f.write(hist["prev_id"][0].to_bytes(1, byteorder='big'))
         f.write(hist["prev_id"][1].to_bytes(1, byteorder='big'))
-        id = get_random_id(owner,repo)
+        if hist["chunk_i"]<hist["chunk_nums"]-1:
+            id = get_random_id(owner,repo)
+            while id == hist["curr_id"]:
+                id = get_random_id(owner,repo)
+        else:
+            id = [0,0]
         f.write(id[0].to_bytes(1, byteorder='big'))
         f.write(id[1].to_bytes(1, byteorder='big'))
         chunk_file = os.path.join(data_dir, "chunks", f"chunk_{hist['chunk_i']}.bin")
@@ -234,6 +240,9 @@ def main():
             pause = input("按回车键继续，输入exit退出：")
             if pause == "exit":
                 break
+        if (i == chunk_nums-1):
+            os.remove(hist_file)
+            print("所有数据已发送完成。")
     
     elif work_mode == "receive":
         output_file = input_obj["output_file"]
@@ -245,6 +254,9 @@ def main():
             pause = input("按回车键继续，输入exit退出：")
             if pause == "exit":
                 break
+        if (hist["chunk_i"] == hist["chunk_nums"]):
+            os.remove(hist_file)
+            print("所有数据已发送完成。")
 
 if __name__ == "__main__":
     main()

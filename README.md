@@ -29,3 +29,5 @@ options:
 ``` 
 
 如果你使用样例的 github_issue_forum 作为论坛实现，那么 `--id` 的参数应该为 `issue number/comment楼层数`。例如，如果你希望隐写后的帖子发布在 `https://github.com/username/repo/issues/1`的第`2`个comment，那么你应该使用 `--id 1/2`。接收同理。
+
+可视化前端首先需要启动后端bak.py，该后端会监听本地的5000端口，然后将`index.html`，`receive.html`和`send.html`部署在http服务器中，例如`http.server`中，访问该服务器，按照提示操作即可

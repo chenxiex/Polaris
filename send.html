@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polaris社交平台隐写协议-发送模式</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --transition: all 0.3s ease;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            --card-shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(52, 152, 219, 0.1) 0%, transparent 25%),
+                linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            background-attachment: fixed;
+            position: relative;
+            overflow-x: hidden;
+            color: #333;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            box-shadow: var(--card-shadow);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container:hover {
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--secondary-color);
+            transition: var(--transition);
+        }
+
+        .container:hover::before {
+            width: 6px;
+            background: var(--primary-color);
+        }
+
+        .title {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+            padding-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--secondary-color);
+            border-radius: 3px;
+        }
+
+        .description {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .description::before {
+            content: '\f05a';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: var(--secondary-color);
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        .input-text,
+        .processed-result {
+            width: calc(100% - 2rem);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            resize: none;
+        }
+
+        .input-text:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .processed-result {
+            background: #f9f9f9;
+            color: var(--primary-color);
+            display: none;
+            min-height: 60px;
+            position: relative;
+            margin-top: 1.5rem;
+        }
+
+        .processed-result::before {
+            content: '\f15c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            color: rgba(0, 0, 0, 0.1);
+            font-size: 1.5rem;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .button:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button::after {
+            content: '\f061';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: var(--transition);
+        }
+
+        .button:hover::after {
+            right: 15px;
+        }
+
+        .columns-container {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .column {
+            flex: 1;
+            box-shadow: var(--card-shadow);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .column:hover {
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .column-title {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .config-box {
+            padding: 1.5rem;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .config-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .config-box h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-box h3::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+        }
+
+        .config-box select,
+        .config-box input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+
+        .config-box select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .checkbox-group {
+            margin: 1rem 0;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            position: relative;
+            padding-left: 30px;
+            user-select: none;
+        }
+
+        .checkbox-group input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 20px;
+            width: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .checkbox-group label:hover .checkmark {
+            background-color: #f1f1f1;
+        }
+
+        .checkbox-group input:checked~.checkmark {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .checkmark::after {
+            content: '';
+            position: absolute;
+            display: none;
+            left: 7px;
+            top: 3px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .checkbox-group input:checked~.checkmark::after {
+            display: block;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .loader {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        @keyframes spin {
+            to {
+                transform: translateY(-50%) rotate(360deg);
+            }
+        }
+
+        .button.loading .loader {
+            display: block;
+        }
+
+        .button.loading::after {
+            display: none;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .columns-container {
+                flex-direction: column;
+            }
+
+            .container,
+            .column {
+                padding: 1.5rem;
+            }
+        }
+
+        .response-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f0f8ff;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .response-info h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .response-info p {
+            margin-bottom: 0;
+        }
+
+        .result-container {
+            margin-top: 1.5rem;
+        }
+
+        .id-input {
+            margin-bottom: 1.5rem;
+        }
+
+        .id-input label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .id-input input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .id-input input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="title"><i class="fas fa-brain"></i> Polaris 发送模式</h1>
+        <div class="description full-width">
+            <p>欢迎使用Polaris。在发送模式下，Polaris将接收您的隐写原始文本和目标帖子ID，对文本进行压缩分组，封装成隐写帧后生成隐写载体并发布到社交媒体上。</p>
+            <p>配置和输入介绍如下：</p>
+            <p>（1）目标帖子ID：发送的首个分组所处的ID，用于后续恢复全文，同时在生成式隐写算法中用于生成隐写文本（请保管好您的帖子ID，这是恢复信息的唯一凭证！）</p>
+            <p>（2）文本：隐写文本，即需要被传递的秘密信息</p>
+            <p>（3）社交平台：用于发布隐写载体的社交平台，需要您提供用户账号和密码</p>
+            <p>（4）隐写算法：协议适配多种隐写算法，支持生成不同的隐写载体</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="columns-container">
+            <!-- 左边的配置列 -->
+            <div class="column">
+                <h2 class="column-title"><i class="fas fa-cog"></i> 配置选项</h2>
+
+                <div class="config-box">
+                    <h3><i class="fas fa-tasks"></i> 社交平台</h3>
+                    <select id="Plat_form">
+                        <option value="reverse">Github</option>
+                        <option value="uppercase">微博（暂未实现）</option>
+                        <option value="lowercase">百度贴吧（暂未实现）</option>
+                        <option value="count">reddit（暂未实现）</option>
+                    </select>
+                </div>
+
+                <div class="config-box">
+                    <h3><i class="fas fa-tasks"></i> 隐写算法</h3>
+                    <select id="processing-type">
+                        <option value="reverse">生成式文本隐写-qwen</option>
+                        <option value="uppercase">生成式文本隐写-Llama（暂未实现）</option>
+                        <option value="lowercase">生成式图片隐写（暂未实现）</option>
+                        <option value="count">上传隐写算法...（暂未实现）</option>
+                    </select>
+                </div>
+
+                <div class="config-box">
+                    <h3><i class="fas fa-chart-bar"></i> 统计信息</h3>
+                    <div id="stats-info">
+                        <p>最近处理: <span id="last-processed">无</span></p>
+                        <p>处理次数: <span id="process-count">0</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右边的功能列 -->
+            <div class="column">
+                <h2 class="column-title"><i class="fas fa-edit"></i> 隐写信息</h2>
+
+                <div class="id-input">
+                    <label for="user-id"><i class="fas fa-blog" /></i> 目标帖子ID</label>
+                    <input type="text" id="user-id" placeholder="请输入目标帖子ID">
+                </div>
+
+                <div class="char-counter">
+                    <span id="char-count">0</span> 字符
+                </div>
+                <textarea id="input-text" class="input-text" placeholder="请输入隐写文本..." rows="6"></textarea>
+                <button type="button" id="process-button" class="button">
+                    开始社交网络隐写
+                    <div class="loader"></div>
+                </button>
+                
+                <div class="result-container">
+                    <div id="processed-result" class="processed-result"></div>
+                    <div id="server-response" class="processed-result" style="margin-top: 1rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputText = document.getElementById('input-text');
+        const userId = document.getElementById('user-id');
+        const charCount = document.getElementById('char-count');
+        const processButton = document.getElementById('process-button');
+        const resultElement = document.getElementById('processed-result');
+        const serverResponseElement = document.getElementById('server-response');
+        const processingType = document.getElementById('processing-type');
+        const platform = document.getElementById('Plat_form');
+        const lastProcessed = document.getElementById('last-processed');
+        const processCount = document.getElementById('process-count');
+
+        let count = 0;
+
+        inputText.addEventListener('input', function () {
+            charCount.textContent = this.value.length;
+        });
+
+        processButton.addEventListener('click', async function (event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+            }
+
+            const text = inputText.value;
+            const id = userId.value;
+            
+            if (!id.trim()) {
+                alert('请输入用户ID');
+                return;
+            }
+            
+            if (!text.trim()) {
+                alert('请输入要处理的文本');
+                return;
+            }
+
+            this.classList.add('loading');
+            resultElement.style.display = 'none';
+            serverResponseElement.style.display = 'none';
+
+            try {
+                const blob = new Blob([text], { type: 'text/plain' });
+                const formData = new FormData();
+                formData.append('file', blob, 'processed_text.txt');
+                formData.append('workmode', 'send');
+                formData.append('userId', id);
+
+                const response = await fetch('http://localhost:5000/process', {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors',
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP错误! 状态码: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                resultElement.textContent = data.processedText || '无处理结果';
+                resultElement.style.color = '';
+                resultElement.classList.add('fade-in');
+                resultElement.style.display = 'block';
+                serverResponseElement.innerHTML = `
+                    <div class="response-info">
+                        <h4><i class="fas fa-server"></i> 服务器响应</h4>
+                        <p>用户ID: ${data.userId || '无'}</p>
+                        <p>${data.message || '无消息'}, 文件长度:${data.fileLength || 0} 字节</p>
+                        <p>处理时间: ${new Date().toLocaleTimeString()}</p>
+                    </div>
+                `;
+                serverResponseElement.style.color = '';
+                serverResponseElement.classList.add('fade-in');
+                serverResponseElement.style.display = 'block';
+
+                count++;
+                processCount.textContent = count;
+                lastProcessed.textContent = new Date().toLocaleTimeString();
+
+            } catch (error) {
+                console.error('处理错误:', error);
+                resultElement.textContent = `处理失败: ${error.message}`;
+                resultElement.style.color = 'var(--accent-color)';
+                resultElement.classList.add('fade-in');
+                resultElement.style.display = 'block';
+
+                serverResponseElement.innerHTML = `
+                    <div class="response-info" style="border-left-color: var(--accent-color); background: #fff0f0;">
+                        <h4><i class="fas fa-exclamation-triangle"></i> 请求失败</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                serverResponseElement.style.color = '';
+                serverResponseElement.classList.add('fade-in');
+                serverResponseElement.style.display = 'block';
+            } finally {
+                processButton.classList.remove('loading');
+            }
+        });
+
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                return false;
+            });
+        }
+    });
+</script>
+    </div>
+</body>
+
+</html>

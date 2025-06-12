@@ -30,8 +30,9 @@ def parse_input():
     # 创建参数解析器
     parser = argparse.ArgumentParser(description="Polaris 数据传输工具")
     parser.add_argument("--mode", choices=["send", "receive", "continue"], required=True, help="工作模式: send(发送), receive(接收), continue(继续发送)")
-    parser.add_argument("--id", required=True, help="发送目标ID，格式为 帖子编号/楼层编号")
-    parser.add_argument("--file", required=True, help="输入或输出文件路径（绝对路径）")
+    parser.add_argument("--id", required=False, help="发送目标ID，格式为 帖子编号/楼层编号")
+    parser.add_argument("--file", required=False, help="输入或输出文件路径（绝对路径）")
+    parser.add_argument("--no-confirm", action='store_true', help="跳过确认提示，直接执行操作")
     
     # 解析命令行参数
     args = parser.parse_args()
@@ -46,15 +47,20 @@ def parse_input():
         return result
     
     input_obj = {}
+    input_obj["no_confirm"] = args.no_confirm
     
     # 处理不同模式的参数
     if work_mode == "send":
+        assert args.id is not None, "发送模式需要指定ID"
+        assert args.file is not None, "发送模式需要指定输入文件"
         input_obj["id"] = process_id(args.id)
         input_file = args.file
         assert(os.path.exists(input_file)), f"隐写文件不存在：{input_file}"
         input_obj["input_file"] = input_file
         
     elif work_mode == "receive":
+        assert args.id is not None, "接收模式需要指定ID"
+        assert args.file is not None, "接收模式需要指定输出文件"
         input_obj["id"] = process_id(args.id)
         output_file = args.file
         input_obj["output_file"] = output_file
@@ -120,7 +126,7 @@ def decompress_file(input_file, output_file):
     os.makedirs(compression_folder, exist_ok=True)
 
 # 分组模块
-def split_file(input_file, output_dir, chunk_size=255):
+def split_file(input_file, output_dir, chunk_size=64):
     os.makedirs(output_dir, exist_ok=True)
     with open(input_file, 'rb') as in_f:
         chunk = in_f.read(chunk_size)
@@ -186,8 +192,8 @@ def create_frame(frame_file):
     with open(frame_file, 'wb') as f:
         f.write(stamp.to_bytes(1, byteorder='big'))
         f.write(hist["chunk_i"].to_bytes(1, byteorder='big'))
-        f.write(hist["prev_id"][0].to_bytes(1, byteorder='big'))
-        f.write(hist["prev_id"][1].to_bytes(1, byteorder='big'))
+        f.write(int(hist["prev_id"][0]).to_bytes(1, byteorder='big'))
+        f.write(int(hist["prev_id"][1]).to_bytes(1, byteorder='big'))
         if hist["chunk_i"]<hist["chunk_nums"]-1:
             id = get_random_id(owner,repo)
             while id == hist["curr_id"]:
@@ -202,6 +208,7 @@ def create_frame(frame_file):
         with open(chunk_file, 'rb') as chunk_fd:
             chunk_data = chunk_fd.read()
             f.write(chunk_data)
+    print(f"当前帖子预计发送id为{hist['curr_id'][0]}/{hist['curr_id'][1]}，下一帧id为{id[0]}/{id[1]}。")
     return id
 
 # 帧提取模块
@@ -213,12 +220,14 @@ def extract_frame(frame_file):
         next_id = [int.from_bytes(f.read(1), byteorder='big'), int.from_bytes(f.read(1), byteorder='big')]
         chunk_size = int.from_bytes(f.read(1), byteorder='big')
         chunk_data = f.read(chunk_size)    
+    print(f"正在提取第{chunk_i}个隐写帧")
 
     try:
         hist = hist_recv_read()
     except:
+        print("接收历史记录文件不存在，正在创建...")
         hist = {}
-    assert chunk_i not in hist, f"第{chunk_i}个隐写帧已存在，请检查帖子。"
+    assert str(chunk_i) not in hist, f"第{chunk_i}个隐写帧已存在，请检查帖子。"
     hist[str(chunk_i)] = {}
     hist[str(chunk_i)]["prev_id"] = prev_id
     hist[str(chunk_i)]["next_id"] = next_id
@@ -329,10 +338,12 @@ def main():
         hist_write(chunk_nums, 0, [0, 0], input_obj["id"])
         for i in range(chunk_nums):
             process_frame()
-            pause = input("按回车键继续，输入exit退出：")
-            if pause == "exit":
-                break
-        if (i == chunk_nums-1):
+            if not input_obj["no_confirm"]:
+                pause = input("按回车键继续，输入exit退出：")
+                if pause == "exit":
+                    break
+        hist = hist_read()
+        if (hist["chunk_i"] == hist["chunk_nums"]):
             os.remove(hist_file)
             print("所有数据已发送完成。")
     
@@ -362,9 +373,11 @@ def main():
         hist = hist_read()
         for i in range(hist["chunk_i"], hist["chunk_nums"]):
             process_frame()
-            pause = input("按回车键继续，输入exit退出：")
-            if pause == "exit":
-                break
+            if not input_obj["no_confirm"]:
+                pause = input("按回车键继续，输入exit退出：")
+                if pause == "exit":
+                    break
+        hist = hist_read()
         if (hist["chunk_i"] == hist["chunk_nums"]):
             os.remove(hist_file)
             print("所有数据已发送完成。")

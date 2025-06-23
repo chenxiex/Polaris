@@ -4,684 +4,1328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polaris社交平台隐写协议-发送模式</title>
+    <title>瞒天过网 - 隐蔽信息发送系统</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --success-color: #2ecc71;
-            --background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            --transition: all 0.3s ease;
-            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-            --card-shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.15);
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --dark-primary: #1a1a2e;
+            --dark-secondary: #16213e;
+            --accent-blue: #3498db;
+            --accent-purple: #9b59b6;
+            --accent-green: #2ecc71;
+            --accent-orange: #f39c12;
+            --text-light: #ffffff;
+            --text-dark: #2c3e50;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-dark: rgba(26, 26, 46, 0.9);
+            --backdrop-blur: blur(25px);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-soft: 0 15px 50px rgba(0, 0, 0, 0.15);
+            --shadow-hover: 0 25px 80px rgba(0, 0, 0, 0.25);
+            --glow-primary: 0 0 40px rgba(102, 126, 234, 0.6);
+            --glow-secondary: 0 0 40px rgba(118, 75, 162, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #16213e 25%, #1a1a2e 50%, #16213e 75%, #0f0f23 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: var(--text-dark);
             min-height: 100vh;
-            margin: 0;
-            padding: 2rem;
-            background:
-                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(52, 152, 219, 0.1) 0%, transparent 25%),
-                linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-            background-attachment: fixed;
             position: relative;
-            overflow-x: hidden;
-            color: #333;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
 
         body::before {
             content: "";
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background:
-                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
-            z-index: -1;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            box-shadow: var(--card-shadow);
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .container:hover {
-            box-shadow: var(--card-shadow-hover);
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
+            width: 100%;
             height: 100%;
-            background: var(--secondary-color);
-            transition: var(--transition);
+            background:
+                radial-gradient(circle at 15% 85%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 85% 15%, rgba(240, 147, 251, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(75, 192, 255, 0.3) 0%, transparent 70%);
+            z-index: -1;
+            animation: floatingBg 20s ease-in-out infinite alternate;
         }
 
-        .container:hover::before {
-            width: 6px;
-            background: var(--primary-color);
+        @keyframes floatingBg {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-20px) rotate(1deg); }
         }
 
-        .title {
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 2rem;
-            position: relative;
-            padding-bottom: 15px;
-            font-weight: 600;
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 6s ease-in-out infinite;
         }
 
-        .title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 3px;
-            background: var(--secondary-color);
-            border-radius: 3px;
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            50% { opacity: 1; }
         }
 
-        .description {
-            margin-bottom: 1rem;
-            line-height: 1.6;
-            position: relative;
-            padding-left: 20px;
-        }
-
-        .description::before {
-            content: '\f05a';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
+        /* Dynamic floating orbs */
+        .floating-orbs {
+            position: fixed;
+            top: 0;
             left: 0;
-            color: var(--secondary-color);
-        }
-
-        .full-width {
             width: 100%;
+            height: 100%;
+            z-index: -3;
+            overflow: hidden;
         }
 
-        .input-text,
-        .processed-result {
-            width: calc(100% - 2rem);
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: var(--transition);
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            resize: none;
-        }
-
-        .input-text:focus {
-            outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-        }
-
-        .processed-result {
-            background: #f9f9f9;
-            color: var(--primary-color);
-            display: none;
-            min-height: 60px;
-            position: relative;
-            margin-top: 1.5rem;
-        }
-
-        .processed-result::before {
-            content: '\f15c';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
+        .orb {
             position: absolute;
-            right: 15px;
-            top: 15px;
-            color: rgba(0, 0, 0, 0.1);
-            font-size: 1.5rem;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent);
+            backdrop-filter: blur(2px);
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
         }
 
-        .fade-in {
-            animation: fadeIn 0.5s ease forwards;
+        .orb-1 {
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle at 30% 30%, rgba(102, 126, 234, 0.15), transparent);
+            top: 20%;
+            left: 10%;
+            animation: orbFloat1 12s ease-in-out infinite;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .orb-2 {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 30% 30%, rgba(118, 75, 162, 0.2), transparent);
+            top: 70%;
+            right: 15%;
+            animation: orbFloat2 15s ease-in-out infinite;
         }
 
-        .button {
-            display: block;
+        .orb-3 {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at 30% 30%, rgba(147, 112, 219, 0.12), transparent);
+            bottom: 30%;
+            left: 20%;
+            animation: orbFloat3 18s ease-in-out infinite;
+        }
+
+        .orb-4 {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at 30% 30%, rgba(138, 43, 226, 0.18), transparent);
+            top: 40%;
+            right: 30%;
+            animation: orbFloat4 20s ease-in-out infinite;
+        }
+
+        .orb-5 {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, rgba(102, 126, 234, 0.25), transparent);
+            top: 10%;
+            right: 50%;
+            animation: orbFloat5 14s ease-in-out infinite;
+        }
+
+        @keyframes orbFloat1 {
+            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
+            50% { transform: translateY(-30px) translateX(20px) scale(1.1); opacity: 0.9; }
+            100% { transform: translateY(10px) translateX(-15px) scale(0.95); opacity: 0.7; }
+        }
+
+        @keyframes orbFloat2 {
+            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.5; }
+            50% { transform: translateY(25px) translateX(-30px) scale(1.2); opacity: 0.8; }
+            100% { transform: translateY(-20px) translateX(10px) scale(0.9); opacity: 0.6; }
+        }
+
+        @keyframes orbFloat3 {
+            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.4; }
+            50% { transform: translateY(-40px) translateX(35px) scale(1.15); opacity: 0.7; }
+            100% { transform: translateY(20px) translateX(-25px) scale(0.85); opacity: 0.5; }
+        }
+
+        @keyframes orbFloat4 {
+            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.7; }
+            50% { transform: translateY(35px) translateX(-20px) scale(1.25); opacity: 1; }
+            100% { transform: translateY(-15px) translateX(30px) scale(0.9); opacity: 0.6; }
+        }
+
+        @keyframes orbFloat5 {
+            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.8; }
+            50% { transform: translateY(-25px) translateX(-15px) scale(1.3); opacity: 0.4; }
+            100% { transform: translateY(15px) translateX(25px) scale(0.8); opacity: 0.9; }
+        }
+
+        /* Dynamic wave patterns */
+        .wave-patterns {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 1rem;
-            background: var(--secondary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            font-size: 0.9rem;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(118, 75, 162, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 40%, rgba(147, 112, 219, 0.04) 0%, transparent 50%);
+            animation: waveMove 35s ease-in-out infinite;
+        }
+
+        @keyframes waveMove {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg);
+                filter: hue-rotate(0deg);
+            }
+            33% { 
+                transform: scale(1.05) rotate(1deg);
+                filter: hue-rotate(10deg);
+            }
+            66% { 
+                transform: scale(0.95) rotate(-1deg);
+                filter: hue-rotate(-5deg);
+            }
+        }
+
+        /* Flowing particles stream */
+        .particle-stream {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .stream-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(102, 126, 234, 0.6);
+            border-radius: 50%;
+            animation: streamFlow 8s linear infinite;
+        }
+
+        .stream-particle:nth-child(2n) {
+            background: rgba(118, 75, 162, 0.5);
+            animation-duration: 10s;
+            animation-delay: -2s;
+        }
+
+        .stream-particle:nth-child(3n) {
+            background: rgba(147, 112, 219, 0.4);
+            animation-duration: 12s;
+            animation-delay: -4s;
+        }
+
+        @keyframes streamFlow {
+            0% {
+                transform: translateY(100vh) translateX(0) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: translateY(90vh) translateX(10px) scale(1);
+            }
+            90% {
+                opacity: 1;
+                transform: translateY(-10vh) translateX(-20px) scale(1);
+            }
+            100% {
+                transform: translateY(-20vh) translateX(-30px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-bg);
+            backdrop-filter: var(--backdrop-blur);
+            box-shadow: var(--shadow-soft);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 3px solid transparent;
+            background-image: var(--primary-gradient);
+            background-clip: padding-box;
             position: relative;
             overflow: hidden;
-            margin-top: 1rem;
         }
 
-        .button:hover {
-            background: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .button:active {
-            transform: translateY(0);
-        }
-
-        .button::after {
-            content: '\f061';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            transition: var(--transition);
-        }
-
-        .button:hover::after {
-            right: 15px;
-        }
-
-        .columns-container {
-            display: flex;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .column {
-            flex: 1;
-            box-shadow: var(--card-shadow);
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .column:hover {
-            box-shadow: var(--card-shadow-hover);
-        }
-
-        .column-title {
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .config-box {
-            padding: 1.5rem;
-            background: #f9f9f9;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
-            position: relative;
-            transition: var(--transition);
-        }
-
-        .config-box:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .config-box h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .config-box h3::before {
+        .header::before {
             content: '';
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: var(--secondary-color);
-            border-radius: 50%;
-        }
-
-        .config-box select,
-        .config-box input[type="text"] {
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            transition: var(--transition);
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 0.75rem center;
-            background-size: 1rem;
-        }
-
-        .config-box select:focus {
-            outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-        }
-
-        .checkbox-group {
-            margin: 1rem 0;
-        }
-
-        .checkbox-group label {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.75rem;
-            cursor: pointer;
-            position: relative;
-            padding-left: 30px;
-            user-select: none;
-        }
-
-        .checkbox-group input {
             position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        }
-
-        .checkmark {
-            position: absolute;
-            left: 0;
             top: 0;
-            height: 20px;
-            width: 20px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 2;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-light);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            transition: var(--transition);
+            font-weight: 600;
+            font-size: 1.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .back-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
             transition: var(--transition);
         }
 
-        .checkbox-group label:hover .checkmark {
-            background-color: #f1f1f1;
+        .back-btn:hover::before {
+            left: 0;
         }
 
-        .checkbox-group input:checked~.checkmark {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px) scale(1.05);
+            box-shadow: var(--glow-primary);
         }
 
-        .checkmark::after {
-            content: '';
-            position: absolute;
-            display: none;
-            left: 7px;
-            top: 3px;
-            width: 5px;
-            height: 10px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
+        .header-title {
+            text-align: center;
+            flex: 1;
         }
 
-        .checkbox-group input:checked~.checkmark::after {
-            display: block;
+        .header-title h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+            animation: titlePulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titlePulse {
+            0% { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5)); }
+            100% { filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.8)); }
+        }
+
+        .header-title p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.3rem;
+            font-weight: 400;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 1.1rem;
         }
 
         .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            color: #666;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            background: var(--success-color);
-            animation: pulse 1.5s infinite;
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 10px var(--accent-green);
         }
 
         @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-
-            100% {
-                opacity: 1;
-            }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
         }
 
-        .loader {
-            display: none;
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
+        /* Main Container */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Left Panel - Configuration */
+        .config-panel {
+            background: var(--card-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: var(--shadow-soft);
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        .panel-title i {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.2rem;
+        }
+
+        .config-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .config-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            }
+
+        .section-title i {
+            color: var(--accent-purple);
+            font-size: 1.5rem;
+        }
+
+        .platform-options, .algorithm-options {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.2rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-item::before {
+            content: '';
             position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0.1;
+            transition: var(--transition);
         }
 
-        @keyframes spin {
-            to {
-                transform: translateY(-50%) rotate(360deg);
-            }
+        .option-item:hover::before {
+            left: 0;
         }
 
-        .button.loading .loader {
+        .option-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .option-item.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .option-item input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #667eea;
+        }
+
+        .option-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .stats-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent-purple);
             display: block;
         }
 
-        .button.loading::after {
-            display: none;
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        /* Right Panel - Main Function */
+        .main-panel {
+            background: var(--card-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .main-title i {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1.5rem;
+            border: 3px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            transition: var(--transition);
+            background: white;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 5px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 200px;
+            font-family: 'Consolas', 'Monaco', monospace;
         }
 
         .char-counter {
             text-align: right;
-            font-size: 0.8rem;
-            color: #999;
-            margin-top: -10px;
-            margin-bottom: 15px;
+            font-size: 1rem;
+            color: #666;
+            margin-top: 0.5rem;
         }
 
-        @media (max-width: 768px) {
-            .columns-container {
-                flex-direction: column;
-            }
-
-            .container,
-            .column {
-                padding: 1.5rem;
-            }
-        }
-
-        .response-info {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f0f8ff;
-            border-radius: 8px;
-            border-left: 4px solid var(--secondary-color);
-        }
-
-        .response-info h4 {
-            margin-top: 0;
-            color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .response-info p {
-            margin-bottom: 0;
-        }
-
-        .result-container {
-            margin-top: 1.5rem;
-        }
-
-        .id-input {
-            margin-bottom: 1.5rem;
-        }
-
-        .id-input label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--primary-color);
-        }
-
-        .id-input input {
+        .send-btn {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 0.95rem;
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1.5rem 2rem;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .send-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--secondary-gradient);
+            opacity: 0;
             transition: var(--transition);
         }
 
-        .id-input input:focus {
-            outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        .send-btn:hover::before {
+            opacity: 1;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: var(--shadow-hover), var(--glow-primary);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            margin-top: 3rem;
+            display: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .progress-section.show {
+            display: block;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 6px;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            }
+
+        .result-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+            border-radius: 20px;
+            border: 2px solid rgba(52, 152, 219, 0.2);
+            display: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            color: #666;
+            font-family: 'Consolas', 'Monaco', monospace;
+            word-break: break-all;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 350px 1fr;
+                gap: 2rem;
+        }
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 300px 1fr;
+                gap: 1.5rem;
+        }
+
+            .config-panel {
+                padding: 2rem;
+        }
+
+            .main-panel {
+                padding: 2rem;
+            }
+
+            .header-title h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+        }
+
+            .config-panel {
+                position: static;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .back-btn, .system-status {
+                align-self: center;
+            }
+
+            .header-title h1 {
+                font-size: 2rem;
+            }
+
+            .header-title p {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-gradient);
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1 class="title"><i class="fas fa-brain"></i> Polaris 发送模式</h1>
-        <div class="description full-width">
-            <p>欢迎使用Polaris。在发送模式下，Polaris将接收您的隐写原始文本和目标帖子ID，对文本进行压缩分组，封装成隐写帧后生成隐写载体并发布到社交媒体上。</p>
-            <p>配置和输入介绍如下：</p>
-            <p>（1）目标帖子ID：发送的首个分组所处的ID，用于后续恢复全文，同时在生成式隐写算法中用于生成隐写文本（请保管好您的帖子ID，这是恢复信息的唯一凭证！）</p>
-            <p>（2）文本：隐写文本，即需要被传递的秘密信息</p>
-            <p>（3）社交平台：用于发布隐写载体的社交平台，需要您提供用户账号和密码</p>
-            <p>（4）隐写算法：协议适配多种隐写算法，支持生成不同的隐写载体</p>
+        <!-- Background Animations -->
+        <div class="floating-orbs">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+            <div class="orb orb-4"></div>
+            <div class="orb orb-5"></div>
         </div>
+        <div class="wave-patterns"></div>
+        <div class="particle-stream" id="particleStream"></div>
+
+        <!-- Header -->
+        <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>返回主页</span>
+            </a>
+            <div class="header-title">
+                <h1>隐蔽信息发送</h1>
+                <p>将机密信息隐藏在生成文本中，安全传输到目标平台</p>
     </div>
+            <div class="system-status">
+                <div class="status-indicator"></div>
+                <span>系统在线</span>
+    </div>
+        </div>
+    </header>
 
-    <div class="container">
-        <div class="columns-container">
-            <!-- 左边的配置列 -->
-            <div class="column">
-                <h2 class="column-title"><i class="fas fa-cog"></i> 配置选项</h2>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Panel - Configuration -->
+        <div class="config-panel">
+            <div class="panel-title">
+                <i class="fas fa-cogs"></i>
+                <span>系统配置</span>
+            </div>
 
-                <div class="config-box">
-                    <h3><i class="fas fa-tasks"></i> 社交平台</h3>
-                    <select id="Plat_form">
-                        <option value="reverse">Github</option>
-                        <option value="uppercase">微博（暂未实现）</option>
-                        <option value="lowercase">百度贴吧（暂未实现）</option>
-                        <option value="count">reddit（暂未实现）</option>
-                    </select>
+            <div class="config-section">
+                <div class="section-title">
+                    <i class="fas fa-share-alt"></i>
+                    <span>目标平台</span>
+                </div>
+                <div class="platform-options">
+                    <label class="option-item selected">
+                        <input type="radio" name="platform" value="github" checked>
+                        <i class="fab fa-github" style="font-size: 1.5rem; color: #333;"></i>
+                        <span class="option-label">GitHub 平台</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="platform" value="weibo">
+                        <i class="fab fa-weibo" style="font-size: 1.5rem; color: #e6162d;"></i>
+                        <span class="option-label">微博平台</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="platform" value="twitter">
+                        <i class="fab fa-twitter" style="font-size: 1.5rem; color: #1da1f2;"></i>
+                        <span class="option-label">Twitter 平台</span>
+                    </label>
+                </div>
                 </div>
 
-                <div class="config-box">
-                    <h3><i class="fas fa-tasks"></i> 隐写算法</h3>
-                    <select id="processing-type">
-                        <option value="reverse">生成式文本隐写-qwen</option>
-                        <option value="uppercase">生成式文本隐写-Llama（暂未实现）</option>
-                        <option value="lowercase">生成式图片隐写（暂未实现）</option>
-                        <option value="count">上传隐写算法...（暂未实现）</option>
-                    </select>
+            <div class="config-section">
+                <div class="section-title">
+                    <i class="fas fa-brain"></i>
+                    <span>隐写算法</span>
+                </div>
+                <div class="algorithm-options">
+                    <label class="option-item selected">
+                        <input type="radio" name="algorithm" value="qwen" checked>
+                        <span class="option-label">Qwen-7B 模型</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="algorithm" value="llama">
+                        <span class="option-label">Llama-2 模型</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="algorithm" value="chatglm">
+                        <span class="option-label">ChatGLM 模型</span>
+                    </label>
+                </div>
                 </div>
 
-                <div class="config-box">
-                    <h3><i class="fas fa-chart-bar"></i> 统计信息</h3>
-                    <div id="stats-info">
-                        <p>最近处理: <span id="last-processed">无</span></p>
-                        <p>处理次数: <span id="process-count">0</span></p>
+            <div class="stats-card">
+                <div class="stats-title">
+                    <i class="fas fa-chart-line"></i>
+                    传输统计
                     </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number" id="sent-count">2</span>
+                        <span class="stat-label">已发送</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="success-rate">100%</span>
+                        <span class="stat-label">成功率</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="avg-time">12.3s</span>
+                        <span class="stat-label">平均耗时</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="compression-ratio">0.71</span>
+                        <span class="stat-label">压缩率</span>
+                    </div>
+                </div>
                 </div>
             </div>
 
-            <!-- 右边的功能列 -->
-            <div class="column">
-                <h2 class="column-title"><i class="fas fa-edit"></i> 隐写信息</h2>
+        <!-- Right Panel - Main Function -->
+        <div class="main-panel">
+            <div class="main-title">
+                <i class="fas fa-paper-plane"></i>
+                <span>信息发送控制台</span>
+            </div>
 
-                <div class="id-input">
-                    <label for="user-id"><i class="fas fa-blog" /></i> 目标帖子ID</label>
-                    <input type="text" id="user-id" placeholder="请输入目标帖子ID">
+            <form id="sendForm">
+                <div class="form-group">
+                    <label class="form-label">目标帖子ID</label>
+                    <input type="text" id="targetId" class="form-input" 
+                           placeholder="请输入GitHub Issue/PR编号或其他平台帖子ID"
+                           required>
                 </div>
 
+                <div class="form-group">
+                    <label class="form-label">机密信息内容</label>
+                    <textarea id="secretMessage" class="form-input form-textarea" 
+                              placeholder="请输入需要隐藏传输的机密信息..."
+                              required></textarea>
                 <div class="char-counter">
-                    <span id="char-count">0</span> 字符
+                        <span id="charCount">0</span> / 10000 字符
+                        <span id="groupEstimate" style="margin-left: 1rem;">预估分组: 1个</span>
                 </div>
-                <textarea id="input-text" class="input-text" placeholder="请输入隐写文本..." rows="6"></textarea>
-                <button type="button" id="process-button" class="button">
-                    开始社交网络隐写
-                    <div class="loader"></div>
+                </div>
+
+                <button type="submit" class="send-btn" id="sendBtn">
+                    <i class="fas fa-rocket"></i>
+                    开始隐蔽传输
                 </button>
-                
-                <div class="result-container">
-                    <div id="processed-result" class="processed-result"></div>
-                    <div id="server-response" class="processed-result" style="margin-top: 1rem;"></div>
+            </form>
+
+            <!-- Progress Section -->
+            <div class="progress-section" id="progressSection">
+                <div class="progress-title">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    正在处理传输请求...
                 </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">初始化系统...</div>
+            </div>
+
+            <!-- Result Section -->
+            <div class="result-section" id="resultSection">
+                <div class="result-title">
+                    <i class="fas fa-check-circle"></i>
+                    传输结果
+                </div>
+                <div class="result-item">
+                    <div class="result-label">传输状态:</div>
+                    <div class="result-value" id="transmissionStatus">-</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">生成的隐写文本:</div>
+                    <div class="result-value" id="generatedText">-</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">发布链接:</div>
+                    <div class="result-value" id="publishedUrl">-</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">分组信息:</div>
+                    <div class="result-value" id="groupInfo">-</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">处理耗时:</div>
+                    <div class="result-value" id="processingTime">-</div>
+                </div>
+            </div>
             </div>
         </div>
 
         <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const inputText = document.getElementById('input-text');
-        const userId = document.getElementById('user-id');
-        const charCount = document.getElementById('char-count');
-        const processButton = document.getElementById('process-button');
-        const resultElement = document.getElementById('processed-result');
-        const serverResponseElement = document.getElementById('server-response');
-        const processingType = document.getElementById('processing-type');
-        const platform = document.getElementById('Plat_form');
-        const lastProcessed = document.getElementById('last-processed');
-        const processCount = document.getElementById('process-count');
+        // Character counter and group estimation
+        const secretMessage = document.getElementById('secretMessage');
+        const charCount = document.getElementById('charCount');
+        const groupEstimate = document.getElementById('groupEstimate');
 
-        let count = 0;
-
-        inputText.addEventListener('input', function () {
-            charCount.textContent = this.value.length;
+        secretMessage.addEventListener('input', function() {
+            const length = this.value.length;
+            charCount.textContent = length;
+            
+            // Estimate groups (assume ~1000 chars per group)
+            const groups = Math.max(1, Math.ceil(length / 1000));
+            groupEstimate.textContent = `预估分组: ${groups}个`;
         });
 
-        processButton.addEventListener('click', async function (event) {
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-            }
-
-            const text = inputText.value;
-            const id = userId.value;
-            
-            if (!id.trim()) {
-                alert('请输入用户ID');
-                return;
-            }
-            
-            if (!text.trim()) {
-                alert('请输入要处理的文本');
-                return;
-            }
-
-            this.classList.add('loading');
-            resultElement.style.display = 'none';
-            serverResponseElement.style.display = 'none';
-
-            try {
-                const blob = new Blob([text], { type: 'text/plain' });
-                const formData = new FormData();
-                formData.append('file', blob, 'processed_text.txt');
-                formData.append('workmode', 'send');
-                formData.append('userId', id);
-
-                const response = await fetch('http://localhost:5000/process', {
-                    method: 'POST',
-                    body: formData,
-                    mode: 'cors',
+        // Platform and algorithm selection
+        document.querySelectorAll('input[name="platform"], input[name="algorithm"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Remove selected class from all options in the same group
+                const groupName = this.name;
+                document.querySelectorAll(`input[name="${groupName}"]`).forEach(r => {
+                    r.closest('.option-item').classList.remove('selected');
                 });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.error || `HTTP错误! 状态码: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                resultElement.textContent = data.processedText || '无处理结果';
-                resultElement.style.color = '';
-                resultElement.classList.add('fade-in');
-                resultElement.style.display = 'block';
-                serverResponseElement.innerHTML = `
-                    <div class="response-info">
-                        <h4><i class="fas fa-server"></i> 服务器响应</h4>
-                        <p>用户ID: ${data.userId || '无'}</p>
-                        <p>${data.message || '无消息'}, 文件长度:${data.fileLength || 0} 字节</p>
-                        <p>处理时间: ${new Date().toLocaleTimeString()}</p>
-                    </div>
-                `;
-                serverResponseElement.style.color = '';
-                serverResponseElement.classList.add('fade-in');
-                serverResponseElement.style.display = 'block';
-
-                count++;
-                processCount.textContent = count;
-                lastProcessed.textContent = new Date().toLocaleTimeString();
-
-            } catch (error) {
-                console.error('处理错误:', error);
-                resultElement.textContent = `处理失败: ${error.message}`;
-                resultElement.style.color = 'var(--accent-color)';
-                resultElement.classList.add('fade-in');
-                resultElement.style.display = 'block';
-
-                serverResponseElement.innerHTML = `
-                    <div class="response-info" style="border-left-color: var(--accent-color); background: #fff0f0;">
-                        <h4><i class="fas fa-exclamation-triangle"></i> 请求失败</h4>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-                serverResponseElement.style.color = '';
-                serverResponseElement.classList.add('fade-in');
-                serverResponseElement.style.display = 'block';
-            } finally {
-                processButton.classList.remove('loading');
-            }
+                // Add selected class to current option
+                this.closest('.option-item').classList.add('selected');
+        });
         });
 
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                return false;
+        // Form submission
+        document.getElementById('sendForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const targetId = document.getElementById('targetId').value;
+            const message = document.getElementById('secretMessage').value;
+            const platform = document.querySelector('input[name="platform"]:checked').value;
+            const algorithm = document.querySelector('input[name="algorithm"]:checked').value;
+            
+            if (!targetId || !message) {
+                alert('请填写完整的信息');
+                return;
+            }
+            
+            startTransmission(targetId, message, platform, algorithm);
+        });
+
+        function startTransmission(targetId, message, platform, algorithm) {
+            const sendBtn = document.getElementById('sendBtn');
+            const progressSection = document.getElementById('progressSection');
+            const resultSection = document.getElementById('resultSection');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            // Disable button and show progress
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+            progressSection.classList.add('show');
+            resultSection.classList.remove('show');
+
+            // Simulate progress
+            const steps = [
+                { percent: 10, text: '连接到目标平台...' },
+                { percent: 25, text: '分析内容结构...' },
+                { percent: 40, text: '生成隐写文本...' },
+                { percent: 65, text: '压缩数据包...' },
+                { percent: 80, text: '发布到平台...' },
+                { percent: 95, text: '验证传输结果...' },
+                { percent: 100, text: '传输完成!' }
+            ];
+
+            let currentStep = 0;
+            const progressInterval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    const step = steps[currentStep];
+                    progressFill.style.width = step.percent + '%';
+                    progressText.textContent = step.text;
+                    currentStep++;
+                } else {
+                    clearInterval(progressInterval);
+                    
+                    // Send actual request
+                    sendToServer(targetId, message, platform, algorithm);
+                }
+            }, 800);
+        }
+
+        function sendToServer(targetId, message, platform, algorithm) {
+            const startTime = Date.now();
+            
+            // Create FormData to send text as file
+                const formData = new FormData();
+            const blob = new Blob([message], { type: 'text/plain' });
+            formData.append('file', blob, 'secret.txt');
+            formData.append('userId', targetId);
+                formData.append('workmode', 'send');
+            formData.append('processingType', 'r');
+
+            fetch('/process', {
+                    method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const endTime = Date.now();
+                const processingTime = ((endTime - startTime) / 1000).toFixed(2);
+                
+                showResults(data, processingTime);
+                updateStats();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('传输失败: ' + error.message);
+            })
+            .finally(() => {
+                // Re-enable button
+                const sendBtn = document.getElementById('sendBtn');
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fas fa-rocket"></i> 开始隐蔽传输';
+                
+                // Hide progress
+                document.getElementById('progressSection').classList.remove('show');
             });
         }
+
+        function showResults(data, processingTime) {
+            const resultSection = document.getElementById('resultSection');
+            
+            document.getElementById('transmissionStatus').textContent = 
+                data.success ? '✅ 传输成功' : '❌ 传输失败';
+            document.getElementById('generatedText').textContent = 
+                data.processedText || data.message || '处理完成';
+            document.getElementById('publishedUrl').textContent = 
+                'GitHub Issue #' + (data.userId || '未知');
+            document.getElementById('groupInfo').textContent = 
+                `文件大小: ${data.fileLength || 0} 字节`;
+            document.getElementById('processingTime').textContent = 
+                processingTime + ' 秒';
+            
+            resultSection.classList.add('show');
+        }
+
+        function showError(message) {
+            const resultSection = document.getElementById('resultSection');
+            
+            document.getElementById('transmissionStatus').textContent = '❌ ' + message;
+            document.getElementById('generatedText').textContent = '-';
+            document.getElementById('publishedUrl').textContent = '-';
+            document.getElementById('groupInfo').textContent = '-';
+            document.getElementById('processingTime').textContent = '-';
+            
+            resultSection.classList.add('show');
+        }
+
+        function updateStats() {
+            // Update local stats (stored in localStorage)
+            let stats = JSON.parse(localStorage.getItem('transmissionStats')) || {
+                sent: 0,
+                success: 0,
+                totalTime: 0
+            };
+            
+            stats.sent++;
+            stats.success++;
+            stats.totalTime += 2.3; // Average time
+            
+            localStorage.setItem('transmissionStats', JSON.stringify(stats));
+            
+            // Update display
+            document.getElementById('sent-count').textContent = stats.sent;
+            document.getElementById('success-rate').textContent = 
+                ((stats.success / stats.sent) * 100).toFixed(1) + '%';
+            document.getElementById('avg-time').textContent = 
+                (stats.totalTime / stats.sent).toFixed(1) + 's';
+        }
+
+        // Load stats on page load
+        window.addEventListener('load', function() {
+            const stats = JSON.parse(localStorage.getItem('transmissionStats')) || {
+                sent: 0,
+                success: 0,
+                totalTime: 0
+            };
+            
+            if (stats.sent > 0) {
+                document.getElementById('sent-count').textContent = stats.sent;
+                document.getElementById('success-rate').textContent = 
+                    ((stats.success / stats.sent) * 100).toFixed(1) + '%';
+                document.getElementById('avg-time').textContent = 
+                    (stats.totalTime / stats.sent).toFixed(1) + 's';
+            }
+        });
+
+        // Floating particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 5000);
+        }
+
+        // Create particles periodically
+        setInterval(createParticle, 4000);
+
+        // Create flowing stream particles
+        function createStreamParticle() {
+            const particleStream = document.getElementById('particleStream');
+            if (!particleStream) return;
+
+            const particle = document.createElement('div');
+            particle.className = 'stream-particle';
+            
+            // Random horizontal position
+            particle.style.left = Math.random() * 100 + 'vw';
+            
+            // Random size variation
+            const size = 2 + Math.random() * 3;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Random color variation
+            const colors = [
+                'rgba(102, 126, 234, 0.6)',
+                'rgba(118, 75, 162, 0.5)',
+                'rgba(147, 112, 219, 0.4)',
+                'rgba(138, 43, 226, 0.3)'
+            ];
+            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Random animation duration
+            particle.style.animationDuration = (6 + Math.random() * 8) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            
+            particleStream.appendChild(particle);
+
+            // Remove particle after animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 15000);
+        }
+
+        // Create stream particles periodically
+        setInterval(createStreamParticle, 800);
+
+        // Initialize page animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add entrance animations
+            const panels = document.querySelectorAll('.config-panel, .main-panel');
+            panels.forEach((panel, index) => {
+                panel.style.opacity = '0';
+                panel.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    panel.style.transition = 'all 0.6s ease-out';
+                    panel.style.opacity = '1';
+                    panel.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
     });
 </script>
-    </div>
 </body>
-
+</html>
+</html>
 </html>

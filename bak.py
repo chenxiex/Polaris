@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string, send_from_directory
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 import os
@@ -11,6 +11,50 @@ SAVE_DIR = "/root/project/haungyuyang/chenxi/Polaris/data/"
 MAIN_DIR = "/root/project/haungyuyang/chenxi/Polaris/main.py"
 INPUT_FILE = os.path.join(SAVE_DIR, "input.txt")
 OUTPUT_FILE = os.path.join(SAVE_DIR, "recover.txt")
+
+@app.route('/')
+def index():
+    """根路径路由，返回主页"""
+    try:
+        return send_from_directory('.', 'index.html')
+    except FileNotFoundError:
+        return '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>瞒天过网 智隐于行</title>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: Arial, sans-serif; margin: 50px; text-align: center; }
+                .container { max-width: 600px; margin: 0 auto; }
+                .btn { display: inline-block; padding: 10px 20px; margin: 10px; 
+                      background: #007bff; color: white; text-decoration: none; 
+                      border-radius: 5px; }
+                .btn:hover { background: #0056b3; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>瞒天过网 智隐于行</h1>
+                <h2>面向大语言模型的隐蔽通信系统</h2>
+                <p>Flask后端服务已启动</p>
+                <a href="send.html" class="btn">发送信息</a>
+                <a href="receive.html" class="btn">接收信息</a>
+                <hr>
+                <p>API端点: <code>/process</code> (POST)</p>
+                <p>支持的操作: send, receive</p>
+            </div>
+        </body>
+        </html>
+        '''
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    """为静态文件提供服务"""
+    try:
+        return send_from_directory('.', filename)
+    except FileNotFoundError:
+        return f"文件 {filename} 未找到", 404
 
 @app.route('/process', methods=['POST'])
 def processtext():

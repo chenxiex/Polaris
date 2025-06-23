@@ -6,9 +6,9 @@ import shutil
 import json
 import argparse  # 新增导入 argparse 模块
 
-data_dir = None
-project_dir = None
-work_mode = None
+data_dir = ""
+project_dir = ""
+work_mode = ""
 
 # 环境变量设置
 def set_env():
@@ -76,7 +76,7 @@ def parse_input():
 
 # 压缩模块
 def llmzip_set_env():
-    llama_folder = os.getenv("LLAMA_FOLDER")
+    llama_folder = os.getenv("LLAMA_FOLDER","")
     llmzip_folder = os.path.join(project_dir, "LLMzip")
     compression_folder = os.path.join(data_dir, "compression")
     os.makedirs(compression_folder, exist_ok=True)

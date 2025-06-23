@@ -8,11 +8,14 @@
 
 ```bash
 pip install -r requirements.txt
+pip install -e .
 ```
 
 然后，按照`.env.example`内的示例，创建`.env`文件，并根据自身情况填入相应的环境变量的值。**注意**，这一步必须完成！
 
 ## 运行
+
+### 命令行前端
 
 ```bash
 > python main.py --help
@@ -30,4 +33,8 @@ options:
 
 如果你使用样例的 github_issue_forum 作为论坛实现，那么 `--id` 的参数应该为 `issue number/comment楼层数`。例如，如果你希望隐写后的帖子发布在 `https://github.com/username/repo/issues/1`的第`2`个comment，那么你应该使用 `--id 1/2`。接收同理。
 
-可视化前端首先需要启动后端bak.py，该后端会监听本地的5000端口，然后将`index.html`，`receive.html`和`send.html`部署在http服务器中，例如`http.server`中，访问该服务器，按照提示操作即可
+### 可视化前端
+```bash
+python bak.py
+```
+然后访问本地`5000`端口即可。

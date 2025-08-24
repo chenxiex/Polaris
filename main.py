@@ -6,6 +6,47 @@ import shutil
 import json
 import argparse  # 新增导入 argparse 模块
 
+class hist_obj:
+    chunk_i: int
+    chunk_nums: int
+    curr_id: list[int]
+    prev_id: list[int]
+
+    def __init__(self, chunk_i:int, chunk_nums:int, curr_id:list[int], prev_id:list[int]):
+        self.chunk_i = chunk_i
+        self.chunk_nums = chunk_nums
+        self.curr_id = curr_id
+        self.prev_id = prev_id
+    
+    def to_dict(self):
+        return {
+            "chunk_i": self.chunk_i,
+            "chunk_nums": self.chunk_nums,
+            "curr_id": self.curr_id,
+            "prev_id": self.prev_id
+        }
+
+class hist_recv_obj:
+    prev_id: list[int]
+    next_id: list[int]
+
+    def __init__(self, prev_id:list[int], next_id:list[int]):
+        self.prev_id = prev_id
+        self.next_id = next_id
+    
+    def to_dict(self):
+        return {
+            "prev_id": self.prev_id,
+            "next_id": self.next_id
+        }
+
+# 自定义JSON编码器
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if hasattr(o, 'to_dict'):
+            return o.to_dict()
+        return super().default(o)
+
 data_dir = ""
 project_dir = ""
 work_mode = ""
@@ -140,35 +181,41 @@ def split_file(input_file, output_dir, chunk_size=64):
 
 # 分组发送历史读取
 hist_file = os.path.join(data_dir, "hist.json")
-def hist_read():
+def hist_read() -> hist_obj:
     with open(hist_file, 'r', encoding='utf-8') as f:
-        # 读取文件内容
         if os.path.getsize(hist_file) == 0:
             raise Exception("历史记录文件为空")
-        # 将 JSON 字符串转换为 Python 对象
-        hist = json.load(f)
+        hist_data = json.load(f)
+        hist = hist_obj(
+            chunk_i=hist_data["chunk_i"],
+            chunk_nums=hist_data["chunk_nums"],
+            curr_id=hist_data["curr_id"],
+            prev_id=hist_data["prev_id"]
+        )
     return hist
 
 # 分组发送历史写入
-def hist_write(chunk_nums, chunk_i, prev_id, curr_id):
-    hist = {
-        "chunk_nums": chunk_nums,
-        "chunk_i": chunk_i,
-        "prev_id": prev_id,
-        "curr_id": curr_id
-    }
+def hist_write(chunk_nums:int, chunk_i:int, prev_id:list[int], curr_id:list[int]):
+    hist = hist_obj(chunk_i=chunk_i, chunk_nums=chunk_nums, curr_id=curr_id, prev_id=prev_id)
     with open(hist_file, 'w', encoding='utf-8') as f:
-        json.dump(hist, f, ensure_ascii=False)
+        json.dump(hist, f, ensure_ascii=False, cls=CustomJSONEncoder)
 
 # 分组接收历史读取
 hist_recv_file = os.path.join(data_dir, "hist_recv.json")
-def hist_recv_read():
+def hist_recv_read() -> dict[str, hist_recv_obj]:
     with open(hist_recv_file, 'r', encoding='utf-8') as f:
-        # 读取文件内容
         if os.path.getsize(hist_recv_file) == 0:
             raise Exception("历史记录文件为空")
-        # 将 JSON 字符串转换为 Python 对象
-        hist = json.load(f)
+        hist_data = json.load(f)
+        hist = {}
+        for key, value in hist_data.items():
+            if isinstance(value, dict):
+                hist[key] = hist_recv_obj(
+                    prev_id=value["prev_id"],
+                    next_id=value["next_id"]
+                )
+            else:
+                hist[key] = value  # 如果值已经是对象，直接使用
     return hist
 
 # 隐写模块
@@ -191,24 +238,24 @@ def create_frame(frame_file):
     hist = hist_read()
     with open(frame_file, 'wb') as f:
         f.write(stamp.to_bytes(1, byteorder='big'))
-        f.write(hist["chunk_i"].to_bytes(1, byteorder='big'))
-        f.write(int(hist["prev_id"][0]).to_bytes(1, byteorder='big'))
-        f.write(int(hist["prev_id"][1]).to_bytes(1, byteorder='big'))
-        if hist["chunk_i"]<hist["chunk_nums"]-1:
+        f.write(hist.chunk_i.to_bytes(1, byteorder='big'))
+        f.write(int(hist.prev_id[0]).to_bytes(1, byteorder='big'))
+        f.write(int(hist.prev_id[1]).to_bytes(1, byteorder='big'))
+        if hist.chunk_i<hist.chunk_nums-1:
             id = get_random_id(owner,repo)
-            while id == hist["curr_id"]:
+            while id == hist.curr_id:
                 id = get_random_id(owner,repo)
         else:
             id = [0,0]
         f.write(id[0].to_bytes(1, byteorder='big'))
         f.write(id[1].to_bytes(1, byteorder='big'))
-        chunk_file = os.path.join(data_dir, "chunks", f"chunk_{hist['chunk_i']}.bin")
+        chunk_file = os.path.join(data_dir, "chunks", f"chunk_{hist.chunk_i}.bin")
         chunk_size = os.path.getsize(chunk_file)
         f.write(chunk_size.to_bytes(1, byteorder='big'))
         with open(chunk_file, 'rb') as chunk_fd:
             chunk_data = chunk_fd.read()
             f.write(chunk_data)
-    print(f"当前帖子预计发送id为{hist['curr_id'][0]}/{hist['curr_id'][1]}，下一帧id为{id[0]}/{id[1]}。")
+    print(f"当前帖子预计发送id为{hist.curr_id[0]}/{hist.curr_id[1]}，下一帧id为{id[0]}/{id[1]}。")
     return id
 
 # 帧提取模块
@@ -229,11 +276,9 @@ def extract_frame(frame_file):
         print("接收历史记录文件不存在，正在创建...")
         hist = {}
     assert str(chunk_i) not in hist, f"第{chunk_i}个隐写帧已存在，请检查帖子。"
-    hist[str(chunk_i)] = {}
-    hist[str(chunk_i)]["prev_id"] = prev_id
-    hist[str(chunk_i)]["next_id"] = next_id
+    hist[str(chunk_i)] = hist_recv_obj(prev_id, next_id)
     with open(hist_recv_file, 'w', encoding='utf-8') as f:
-        json.dump(hist, f, ensure_ascii=False)
+        json.dump(hist, f, ensure_ascii=False, cls=CustomJSONEncoder)
 
     chunk_file = os.path.join(data_dir, "chunks", f"chunk_{chunk_i}.bin")
     with open(chunk_file, 'wb') as chunk_fd:
@@ -243,13 +288,13 @@ def extract_frame(frame_file):
 # 隐写与发送
 def process_frame():
     hist = hist_read()
-    print("正在生成第{}个隐写帧...".format(hist["chunk_i"]))
+    print("正在生成第{}个隐写帧...".format(hist.chunk_i))
     frame_file = os.path.join(data_dir, "frame.bin")
     next_id = create_frame(frame_file)
     print(f"隐写帧生成完成。")
 
     print("正在获取帖子数据...")
-    prompt = get_post_data(owner, repo, hist["curr_id"][0], hist["curr_id"][1])
+    prompt = get_post_data(owner, repo, hist.curr_id[0], hist.curr_id[1])
     prompt_file = os.path.join(data_dir, "prompt.txt")
     with open(prompt_file, 'w', encoding='utf-8') as f:
         f.write(prompt)
@@ -259,15 +304,17 @@ def process_frame():
     output_file = os.path.join(data_dir, "output.txt")
     encode_file(prompt_file, frame_file, output_file)
     print("隐写完成。")
+    with open(output_file, 'r', encoding='utf-8') as f:
+        print(f"隐写结果预览：\n{f.read()[:200]}...\n")
 
     print("正在发送...")
-    send_post_data(owner, repo, hist["curr_id"][0], output_file)
+    send_post_data(owner, repo, hist.curr_id[0], output_file)
     print("发送完成。")
-    hist["chunk_i"] += 1
-    hist["prev_id"] = hist["curr_id"]
-    hist["curr_id"] = next_id
+    hist.chunk_i += 1
+    hist.prev_id = hist.curr_id
+    hist.curr_id = next_id
     with open(hist_file, 'w', encoding='utf-8') as f:
-        json.dump(hist, f, ensure_ascii=False)
+        json.dump(hist, f, ensure_ascii=False, cls=CustomJSONEncoder)
 
 # 接收与提取
 def receive_frame(id):
@@ -292,6 +339,8 @@ def receive_frame(id):
             verify_stamp = int.from_bytes(f.read(1), byteorder='big')
         if verify_stamp == stamp:
             flag = True
+            with open(comment_file, 'r', encoding='utf-8') as f:
+                print(f"找到含有隐写数据的评论：\n{f.read()[:200]}...\n")
             break
     if not flag:
         print("未找到隐写数据，请检查帖子。")
@@ -311,12 +360,12 @@ def receive_frames():
             i= int(i_str)
             if i-1 >= 0 and str(i-1) not in hist:
                 print(f"第{i-1}个隐写帧缺失，正在接收...")
-                receive_frame(id["prev_id"])
+                receive_frame(id.prev_id)
                 flag = True
                 break
-            if id["next_id"] != [0,0] and str(i+1) not in hist:
+            if id.next_id != [0,0] and str(i+1) not in hist:
                 print(f"第{i+1}个隐写帧缺失，正在接收...")
-                receive_frame(id["next_id"])
+                receive_frame(id.next_id)
                 flag = True
                 break
 
@@ -344,7 +393,7 @@ def main():
                 if pause == "exit":
                     break
         hist = hist_read()
-        if (hist["chunk_i"] == hist["chunk_nums"]):
+        if (hist.chunk_i == hist.chunk_nums):
             os.remove(hist_file)
             print("所有数据已发送完成。")
     
@@ -374,14 +423,14 @@ def main():
     
     elif work_mode == "continue":
         hist = hist_read()
-        for i in range(hist["chunk_i"], hist["chunk_nums"]):
+        for i in range(hist.chunk_i, hist.chunk_nums):
             process_frame()
             if not input_obj["no_confirm"]:
                 pause = input("按回车键继续，输入exit退出：")
                 if pause == "exit":
                     break
         hist = hist_read()
-        if (hist["chunk_i"] == hist["chunk_nums"]):
+        if (hist.chunk_i == hist.chunk_nums):
             os.remove(hist_file)
             print("所有数据已发送完成。")
 

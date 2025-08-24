@@ -219,8 +219,9 @@ def extract_frame(frame_file):
         prev_id = [int.from_bytes(f.read(1), byteorder='big'), int.from_bytes(f.read(1), byteorder='big')]
         next_id = [int.from_bytes(f.read(1), byteorder='big'), int.from_bytes(f.read(1), byteorder='big')]
         chunk_size = int.from_bytes(f.read(1), byteorder='big')
-        chunk_data = f.read(chunk_size)    
+        chunk_data = f.read(chunk_size)
     print(f"正在提取第{chunk_i}个隐写帧")
+    print(f"当前帧的上一帧id为{prev_id[0]}/{prev_id[1]}，下一帧id为{next_id[0]}/{next_id[1]}。")
 
     try:
         hist = hist_recv_read()
@@ -348,6 +349,8 @@ def main():
             print("所有数据已发送完成。")
     
     elif work_mode == "receive":
+        if os.path.exists(hist_recv_file):
+            os.remove(hist_recv_file)
         output_file = input_obj["output_file"]
         id = input_obj["id"]
         receive_frame(id)
